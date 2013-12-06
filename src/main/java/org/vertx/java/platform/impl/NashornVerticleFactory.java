@@ -56,7 +56,6 @@ public class NashornVerticleFactory implements VerticleFactory {
 
   @Override
   public void reportException(Logger logger, Throwable t) {
-    System.out.println("** in reportexception");
     logger.error("Exception in Nashorn JavaScript verticle", t);
   }
 

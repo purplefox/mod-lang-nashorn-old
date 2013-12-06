@@ -110,13 +110,11 @@ public class VertxScriptContext {
     try {
       engine.eval("if (typeof vertxStop === 'function') vertxStop();", ctx);
     } catch (ScriptException e) {
-      System.out.println("** caught scriptexception in vertxstop");
       throw new PlatformManagerException(e);
     }
   }
 
   public Object executeScript() {
-    System.out.println("Executing script: " + scriptName + " Thread: " + Thread.currentThread());
     try (InputStream is = mcl.getResourceAsStream(scriptName)) {
       if (is == null) {
         throw new FileNotFoundException("Cannot find script: " + scriptName);
@@ -138,13 +136,10 @@ public class VertxScriptContext {
         sWrap.append("__jscriptcontext.setModuleExports(module.exports)");
       }
       Object res = engine.eval(sWrap.toString(), ctx);
-      System.out.println("Successfully executed script: " + scriptName + " Thread: " + Thread.currentThread());
       return res;
     } catch (IOException e) {
-      System.out.println("** caught ioexception in executescript");
       throw new PlatformManagerException(e);
     } catch (ScriptException e) {
-      System.out.println("** caught scriptexception in executescript, script is " + scriptName + " Thread: " + Thread.currentThread());
       // We need to set the correct filename
       String newMessage = e.getMessage().replace("<eval>", scriptName);
       ScriptException corrected = new ScriptException(newMessage, scriptName, e.getLineNumber(), e.getColumnNumber());
