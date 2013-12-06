@@ -1,22 +1,20 @@
-[![Build Status](https://secure.travis-ci.org/vert-x/mod-lang-dynjs.png) ](http://travis-ci.org/vert-x/mod-lang-dynjs)
+# Javascript on Vert.x with Nashorn
 
-Cloudbees [Build Status](https://vertx.ci.cloudbees.com/view/Javascript/job/vert.x-mod-lang-dynjs/)
-
-# Javascript on Vert.x with DynJS
-
-Use [DynJS](http://github.com/dynjs/dynjs) as your Javascript runtime instead of Rhino on vert.x 2.0.
-This language module uses the vert.x Javascript API in [mod-lang-js](https://github.com/vert-x/mod-lang-js)
-with the DynJS runtime. The API documentation is the same as for `lang-js` and `lang-rhino`, and can be found 
+This module uses the Nashorn JavaScript engine to power Vert.x JavaScript verticles
+This language module uses the generic vert.x Javascript API in [mod-lang-js](https://github.com/vert-x/mod-lang-js).
+The API documentation is the same as for `lang-js` and `lang-rhino`, and can be found
 on the `lang-js` CI server.
 
 [API Documentation](https://vertx.ci.cloudbees.com/view/Javascript/job/vert.x-mod-lang-js/lastSuccessfulBuild/artifact/target/docs/index.html)
 
+* Important note. The Nashorn engine is an intrinsic part of the Java 8 JDK implementation. In order to use this module
+you will need to be running Vert.x with JDK 1.8.0 or later *
+
 ## Usage
 
 By default, vert.x runs Javascript with Rhino. Change this by creating a
-`langs.properties` file at the root of your project that looks like this.
+`langs.properties` file at the root of your project that looks something like this.
 
-    dynjs=io.vertx~lang-dynjs~1.0.0-Beta1:org.dynjs.vertx.DynJSVerticleFactory
-    .js=dynjs
+    nashorn=io.vertx~lang-nashorn~0.1-SNAPSHOT:org.vertx.java.platform.impl.NashornVerticleFactory
+    .js=nashorn
 
-Enjoy. And if you have any problems, hit us on on freenode at #dynjs or #vertx.
