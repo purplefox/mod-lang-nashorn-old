@@ -19,6 +19,7 @@ package org.vertx.java.platform.impl;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
+import org.vertx.java.platform.PlatformManagerException;
 import org.vertx.java.platform.Verticle;
 import org.vertx.java.platform.VerticleFactory;
 
@@ -43,6 +44,9 @@ public class NashornVerticleFactory implements VerticleFactory {
     this.cl = classloader;
     ScriptEngineManager factory = new ScriptEngineManager();
     this.engine = factory.getEngineByName("nashorn");
+    if (engine == null) {
+      throw new PlatformManagerException("Nashorn engine not found, probably you are not using Java 8 or later");
+    }
   }
 
   @Override
@@ -52,6 +56,7 @@ public class NashornVerticleFactory implements VerticleFactory {
 
   @Override
   public void reportException(Logger logger, Throwable t) {
+    System.out.println("** in reportexception");
     logger.error("Exception in Nashorn JavaScript verticle", t);
   }
 
@@ -60,6 +65,7 @@ public class NashornVerticleFactory implements VerticleFactory {
   }
 
   private class NashornVerticle extends Verticle {
+
     private final Map<String, Object> cachedRequires = new HashMap<>();
     private final VertxScriptContext scriptContext;
 

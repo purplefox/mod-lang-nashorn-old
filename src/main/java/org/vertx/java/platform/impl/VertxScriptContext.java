@@ -44,7 +44,7 @@ public class VertxScriptContext {
   public VertxScriptContext(String scriptName, ClassLoader mcl, Vertx vertx, Container container, ScriptEngine engine,
                             Map<String, Object> cachedRequires) {
     this(null, scriptName, false, mcl, vertx, container, engine, cachedRequires, false);
-    this.ctx = createContext();
+    createContext();
   }
 
   private VertxScriptContext(ScriptContext ctx, String scriptName, boolean module, ClassLoader mcl, Vertx vertx,
@@ -61,18 +61,19 @@ public class VertxScriptContext {
     this.inheritContext = inheritContext;
   }
 
-  private ScriptContext createContext() {
-    ScriptContext context = new SimpleScriptContext();
+  private void createContext() {
+    ctx = new SimpleScriptContext();
     Bindings bindings = engine.createBindings();
     bindings.put("__jvertx", vertx);
     bindings.put("__jcontainer", container);
     bindings.put("__jscriptcontext", this);
-    context.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
-    return context;
+    ctx.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
   }
 
   private VertxScriptContext createModuleContext(String moduleScript) {
-    return new VertxScriptContext(createContext(), moduleScript, true, mcl, vertx, container, engine, cachedRequires, false);
+    VertxScriptContext ctx =  new VertxScriptContext(null, moduleScript, true, mcl, vertx, container, engine, cachedRequires, false);
+    ctx.createContext();
+    return ctx;
   }
 
   private VertxScriptContext createLoadContext(String scriptName) {
@@ -109,12 +110,13 @@ public class VertxScriptContext {
     try {
       engine.eval("if (typeof vertxStop === 'function') vertxStop();", ctx);
     } catch (ScriptException e) {
+      System.out.println("** caught scriptexception in vertxstop");
       throw new PlatformManagerException(e);
     }
   }
 
   public Object executeScript() {
-
+    System.out.println("Executing script: " + scriptName + " Thread: " + Thread.currentThread());
     try (InputStream is = mcl.getResourceAsStream(scriptName)) {
       if (is == null) {
         throw new FileNotFoundException("Cannot find script: " + scriptName);
@@ -135,9 +137,19 @@ public class VertxScriptContext {
       if (module) {
         sWrap.append("__jscriptcontext.setModuleExports(module.exports)");
       }
-      return engine.eval(sWrap.toString(), ctx);
-    } catch (Exception e) {
+      Object res = engine.eval(sWrap.toString(), ctx);
+      System.out.println("Successfully executed script: " + scriptName + " Thread: " + Thread.currentThread());
+      return res;
+    } catch (IOException e) {
+      System.out.println("** caught ioexception in executescript");
       throw new PlatformManagerException(e);
+    } catch (ScriptException e) {
+      System.out.println("** caught scriptexception in executescript, script is " + scriptName + " Thread: " + Thread.currentThread());
+      // We need to set the correct filename
+      String newMessage = e.getMessage().replace("<eval>", scriptName);
+      ScriptException corrected = new ScriptException(newMessage, scriptName, e.getLineNumber(), e.getColumnNumber());
+      corrected.setStackTrace(e.getStackTrace());
+      throw new PlatformManagerException(corrected);
     }
   }
 }
